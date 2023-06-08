@@ -15,6 +15,26 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Verify JWT
+const verifyJWT = (req, res, next) => {
+  const authorization = req.headers.authorization;
+  if (!authorization) {
+    return res
+      .status(403)
+      .send({ error: true, message: "Unauthorized Access" });
+  }
+  const token = authorization.split(" ")[1];
+  jwt.verify(token, process.env.USER_ACCESS_TOKEN, (err, decoded) => {
+    if (err) {
+      return res
+        .status(401)
+        .send({ error: true, message: "Unauthorized Access" });
+    }
+    req.decoded = decoded;
+  });
+  next();
+};
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.loo5igw.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   serverApi: {
@@ -54,6 +74,21 @@ async function run() {
         options
       );
       res.send(result);
+    });
+
+    // Get Use Role
+    app.get("/user-role/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      if (req.decoded.email !== email) {
+        return res
+          .status(401)
+          .send({ error: true, message: "Unauthorized Access" });
+      }
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      console.log(user);
+      const role = user?.role;
+      res.send({ role });
     });
 
     // Send a ping to confirm a successful connection
