@@ -147,6 +147,19 @@ async function run() {
       res.send(result);
     });
 
+    // Add Classes To Db
+    app.post("/class", verifyJWT, verifyInstructor, async (req, res, next) => {
+      const classInfo = req.body;
+      const result = await classCollection.insertOne(classInfo);
+      res.send(result);
+    });
+
+    // Get All Classes
+    app.get("/classes", verifyJWT, verifyAdmin, async (req, res) => {
+      const result = await classCollection.find().toArray();
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
