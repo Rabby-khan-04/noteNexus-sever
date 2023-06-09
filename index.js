@@ -176,6 +176,20 @@ async function run() {
       res.send(result);
     });
 
+    //Approve Class
+    app.put("/class-approve/:id", verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const option = { upsert: true };
+      const upodateDoc = {
+        $set: {
+          status: "Approved",
+        },
+      };
+      const result = await classCollection.updateOne(query, upodateDoc, option);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
