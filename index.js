@@ -93,11 +93,17 @@ async function run() {
     // Save User Info To DB
     app.put("/user/:email", async (req, res) => {
       const email = req.params.email;
-      const user = req.body;
+      const userInfo = req.body;
       const query = { email: email };
+      const existingUser = await usersCollection.findOne(query);
+
+      if (existingUser) {
+        return res.status(200).send({ message: "User Exist" });
+      }
+      userInfo.role = "Student";
       const options = { upsert: true };
       const updatedDoc = {
-        $set: user,
+        $set: userInfo,
       };
       const result = await usersCollection.updateOne(
         query,
@@ -226,6 +232,20 @@ async function run() {
         updetedDoc,
         options
       );
+      res.send(result);
+    });
+
+    // Get Popular Classes
+    app.get("/popular-classes", async (req, res) => {
+      const query = { status: "Approved" };
+      const limit = 6;
+      const sort = { enroled: -1 };
+
+      const result = await classCollection
+        .find(query)
+        .sort(sort)
+        .limit(limit)
+        .toArray();
       res.send(result);
     });
 
