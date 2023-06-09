@@ -211,6 +211,23 @@ async function run() {
       res.send(result);
     });
 
+    // Update Class
+    app.put("/class/:id", verifyJWT, verifyInstructor, async (req, res) => {
+      const id = req.params.id;
+      const classInfo = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updetedDoc = {
+        $set: classInfo,
+      };
+      const result = await classCollection.updateOne(
+        query,
+        updetedDoc,
+        options
+      );
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
