@@ -53,6 +53,7 @@ async function run() {
   try {
     const database = client.db("noteNexus");
     const usersCollection = database.collection("user");
+    const classCollection = database.collection("classes");
 
     // VerifyAdmin
     const verifyAdmin = async (req, res, next) => {
