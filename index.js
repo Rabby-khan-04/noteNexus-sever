@@ -219,6 +219,7 @@ async function run() {
       const options = { upsert: true };
       const updetedDoc = {
         $set: classInfo,
+        $unset: { feedback: 1 },
       };
       const result = await classCollection.updateOne(
         query,
