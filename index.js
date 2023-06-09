@@ -2,7 +2,12 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const {
+  MongoClient,
+  ServerApiVersion,
+  ObjectId,
+  ClientSession,
+} = require("mongodb");
 var jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
 
@@ -49,6 +54,19 @@ async function run() {
     const database = client.db("noteNexus");
     const usersCollection = database.collection("user");
 
+    // VerifyAdmin
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      if (user?.role !== "Admin") {
+        return res
+          .status(403)
+          .send({ error: true, message: "Unauthorized Access" });
+      }
+      next();
+    };
+
     // Send User Token
     app.post("/jwt", async (req, res) => {
       const user = req.body;
@@ -86,9 +104,34 @@ async function run() {
       }
       const query = { email: email };
       const user = await usersCollection.findOne(query);
-      console.log(user);
-      const role = user?.role;
-      res.send({ role });
+
+      const userRole = user?.role;
+      res.send({ role: userRole });
+    });
+
+    // Get All Users
+    app.get("/all-users/:email", verifyJWT, verifyAdmin, async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
+    // Set User Role
+    app.put("/set-role/:id", verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const { role } = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          role: role,
+        },
+      };
+      const result = await usersCollection.updateOne(
+        query,
+        updatedDoc,
+        options
+      );
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
