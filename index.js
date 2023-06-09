@@ -198,7 +198,7 @@ async function run() {
       async (req, res) => {
         const email = req.params.email;
         const query = { email: email };
-        const result = await classCollection.find(query);
+        const result = await classCollection.find(query).toArray();
         res.send(result);
       }
     );
