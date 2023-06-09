@@ -68,6 +68,18 @@ async function run() {
       next();
     };
 
+    const verifyInstructor = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      if (user?.role !== "Instructor") {
+        return res
+          .status(403)
+          .send({ error: true, message: "Unauthorized Access" });
+      }
+      next();
+    };
+
     // Send User Token
     app.post("/jwt", async (req, res) => {
       const user = req.body;
