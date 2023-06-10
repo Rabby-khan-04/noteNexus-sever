@@ -56,6 +56,7 @@ async function run() {
     const usersCollection = database.collection("user");
     const classCollection = database.collection("classes");
     const savedClassCollection = database.collection("savedClasses");
+    const paymentHistry = database.collection("payments");
 
     // VerifyAdmin
     const verifyAdmin = async (req, res, next) => {
@@ -327,7 +328,23 @@ async function run() {
       }
     });
 
-    //
+    //Save Payment info
+    app.post("/payment-histry", verifyJWT, async (req, res) => {
+      const paymentInfo = req.body;
+      const classId = paymentInfo.classId;
+      const classQuery = { _id: new ObjectId(classId) };
+      const updatedDoc = {
+        $inc: { seats: -1, enrolled: 1 },
+      };
+      const options = { returnOriginal: false };
+      const updateClass = await classCollection.findOneAndUpdate(
+        classQuery,
+        updatedDoc,
+        options
+      );
+      const result = await paymentHistry.insertOne(paymentInfo);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
