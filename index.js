@@ -293,6 +293,15 @@ async function run() {
       res.send(result);
     });
 
+    // Signle Saved Class
+    app.get("/saved-class/:id/payment", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const email = req.decoded.email;
+      const query = { studentEmail: email, _id: new ObjectId(id) };
+      const result = await savedClassCollection.findOne(query);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
