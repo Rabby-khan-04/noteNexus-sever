@@ -268,6 +268,14 @@ async function run() {
       res.send(result);
     });
 
+    // Get Popular Instructors
+    app.get("/instructors", async (req, res) => {
+      const query = { role: "Instructor" };
+      const limit = parseInt(req.query.limit) || Infinity;
+      const result = await usersCollection.find(query).limit(limit).toArray();
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
