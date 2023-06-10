@@ -10,6 +10,7 @@ const {
 } = require("mongodb");
 var jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 // middleware
 const corsOptions = {
@@ -301,6 +302,32 @@ async function run() {
       const result = await savedClassCollection.findOne(query);
       res.send(result);
     });
+
+    // create payment intent
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+      const { price } = req.body;
+      if (!price) {
+        return res.send({ error: true, message: "Unexped Error" });
+      }
+      const amount = price * 100;
+      try {
+        // Create a payment intent
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: amount,
+          currency: "usd",
+          payment_method_types: ["card"],
+        });
+
+        res.send({ clientSecret: paymentIntent.client_secret });
+      } catch (error) {
+        console.log(error);
+        res
+          .status(500)
+          .send({ error: true, message: "Payment Intent Creation Failed" });
+      }
+    });
+
+    //
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
