@@ -237,9 +237,9 @@ async function run() {
     });
 
     // Get Popular Classes
-    app.get("/popular-classes", async (req, res) => {
+    app.get("/all-classes", async (req, res) => {
       const query = { status: "Approved" };
-      const limit = 6;
+      const limit = parseInt(req.query.limit) || Infinity;
       const sort = { enroled: -1 };
 
       const result = await classCollection
