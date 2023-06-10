@@ -54,6 +54,7 @@ async function run() {
     const database = client.db("noteNexus");
     const usersCollection = database.collection("user");
     const classCollection = database.collection("classes");
+    const savedClassCollection = database.collection("savedClasses");
 
     // VerifyAdmin
     const verifyAdmin = async (req, res, next) => {
@@ -246,6 +247,24 @@ async function run() {
         .sort(sort)
         .limit(limit)
         .toArray();
+      res.send(result);
+    });
+
+    // Select CLasses
+    app.post("/select-class", verifyJWT, async (req, res) => {
+      const bookinDetails = req.body;
+      const query = {
+        classId: bookinDetails?.classId,
+        studentEmail: bookinDetails?.studentEmail,
+      };
+      const isExist = await savedClassCollection.findOne(query);
+      if (isExist) {
+        return res.send({
+          exist: true,
+          message: "This Class Is Already In Your Bookmark",
+        });
+      }
+      const result = await savedClassCollection.insertOne(bookinDetails);
       res.send(result);
     });
 
