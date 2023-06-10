@@ -276,6 +276,14 @@ async function run() {
       res.send(result);
     });
 
+    // Get Students Saved Class
+    app.get("/saved-class", verifyJWT, async (req, res) => {
+      const email = req.decoded.email;
+      const query = { studentEmail: email };
+      const result = await savedClassCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
