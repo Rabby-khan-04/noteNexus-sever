@@ -334,7 +334,7 @@ async function run() {
       const classId = paymentInfo.classId;
       const classQuery = { _id: new ObjectId(classId) };
       const updatedDoc = {
-        $inc: { seats: -1, enrolled: 1 },
+        $inc: { seats: -1, enroled: 1 },
       };
       const options = { returnOriginal: false };
       const updateClass = await classCollection.findOneAndUpdate(
@@ -343,6 +343,26 @@ async function run() {
         options
       );
       const result = await paymentHistry.insertOne(paymentInfo);
+      res.send(result);
+    });
+
+    // Checking If the student already Enroled
+    app.get("/cheking-histry", verifyJWT, async (req, res) => {
+      const data = req.query;
+      const query = { classId: data.id, studentEmail: data.email };
+      const result = await paymentHistry.findOne(query);
+      if (result) {
+        res.send({ exist: true });
+      } else {
+        res.send({ exist: false });
+      }
+    });
+
+    // Get All Users Payment Histry
+    app.get("/payment-histry", verifyJWT, async (req, res) => {
+      const email = req.decoded.email;
+      const query = { studentEmail: email };
+      const result = await paymentHistry.find(query).toArray();
       res.send(result);
     });
 
