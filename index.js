@@ -158,7 +158,7 @@ async function run() {
     });
 
     // Add Classes To Db
-    app.post("/class", verifyJWT, verifyInstructor, async (req, res, next) => {
+    app.post("/class", verifyJWT, verifyInstructor, async (req, res) => {
       const classInfo = req.body;
       const result = await classCollection.insertOne(classInfo);
       res.send(result);
