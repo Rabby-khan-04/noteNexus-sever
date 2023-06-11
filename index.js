@@ -374,7 +374,8 @@ async function run() {
     app.get("/payment-histry", verifyJWT, async (req, res) => {
       const email = req.decoded.email;
       const query = { studentEmail: email };
-      const result = await paymentHistry.find(query).toArray();
+      const sort = { date: -1 };
+      const result = await paymentHistry.find(query).sort(sort).toArray();
       res.send(result);
     });
 
