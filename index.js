@@ -146,6 +146,7 @@ async function run() {
       const updatedDoc = {
         $set: {
           role: role,
+          enrolled: 0,
         },
       };
       const result = await usersCollection.updateOne(
@@ -274,7 +275,12 @@ async function run() {
     app.get("/instructors", async (req, res) => {
       const query = { role: "Instructor" };
       const limit = parseInt(req.query.limit) || Infinity;
-      const result = await usersCollection.find(query).limit(limit).toArray();
+      const sort = { enrolled: -1 };
+      const result = await usersCollection
+        .find(query)
+        .sort(sort)
+        .limit(limit)
+        .toArray();
       res.send(result);
     });
 
@@ -333,6 +339,7 @@ async function run() {
       const paymentInfo = req.body;
       const classId = paymentInfo.classId;
       const classQuery = { _id: new ObjectId(classId) };
+      const instructorQuery = { email: paymentInfo.email };
       const updatedDoc = {
         $inc: { seats: -1, enroled: 1 },
       };
@@ -341,6 +348,11 @@ async function run() {
         classQuery,
         updatedDoc,
         options
+      );
+      const updateTeacher = await usersCollection.findOneAndUpdate(
+        instructorQuery,
+        { $inc: { enrolled: 1 } },
+        { upsert: true }
       );
       const result = await paymentHistry.insertOne(paymentInfo);
       res.send(result);
